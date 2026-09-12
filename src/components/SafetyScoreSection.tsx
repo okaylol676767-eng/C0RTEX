@@ -1,13 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { SafetyScore } from "@/components/SafetyScore";
 import { Reveal } from "@/components/motion/Reveal";
-import { DEMO_GRADE_AFTER, DEMO_GRADE_BEFORE, DEMO_SCORE_AFTER, DEMO_SCORE_BEFORE } from "@/data/demoFindings";
+import { DEMO_GRADE_BEFORE, DEMO_SCORE_BEFORE } from "@/data/demoFindings";
 
 export function SafetyScoreSection() {
-  const [patched, setPatched] = useState(false);
-
   return (
     <section className="mx-auto max-w-6xl px-5 py-24">
       <Reveal>
@@ -26,20 +23,7 @@ export function SafetyScoreSection() {
         </p>
       </Reveal>
       <div className="mt-8 max-w-xl">
-        <SafetyScore
-          score={patched ? DEMO_SCORE_AFTER : DEMO_SCORE_BEFORE}
-          grade={patched ? DEMO_GRADE_AFTER : DEMO_GRADE_BEFORE}
-        />
-        <button
-          type="button"
-          className="mt-4 rounded-full border border-line px-4 py-2 text-sm"
-          onClick={() => setPatched((value) => !value)}
-        >
-          {patched ? "Show before patch" : "Preview after patch"}
-        </button>
-        <p className="mt-3 text-sm text-muted">
-          Animated transition: {DEMO_SCORE_BEFORE} → {DEMO_SCORE_AFTER}
-        </p>
+        <SafetyScore score={DEMO_SCORE_BEFORE} grade={DEMO_GRADE_BEFORE} />
       </div>
     </section>
   );
