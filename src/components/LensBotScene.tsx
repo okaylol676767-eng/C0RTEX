@@ -55,6 +55,7 @@ export function LensBotScene({ className = "" }: LensBotSceneProps) {
   const [failed, setFailed] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const visibleRef = useRef(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -69,6 +70,7 @@ export function LensBotScene({ className = "" }: LensBotSceneProps) {
     if (!node) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
+        visibleRef.current = entry.isIntersecting;
         setVisible(entry.isIntersecting);
         if (entry.isIntersecting) setHasLoaded(true);
       },
@@ -86,6 +88,13 @@ export function LensBotScene({ className = "" }: LensBotSceneProps) {
     const target = { x: 0, y: 0 };
 
     const onMove = (event: PointerEvent) => {
+      // Off-screen: ignore the cursor entirely — the pose eases back to a
+      // locked neutral position until the scene re-enters the frame.
+      if (!visibleRef.current) {
+        target.x = 0;
+        target.y = 0;
+        return;
+      }
       if (event.pointerType !== "mouse") return;
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
@@ -96,9 +105,16 @@ export function LensBotScene({ className = "" }: LensBotSceneProps) {
     };
 
     const tick = () => {
+      if (!visibleRef.current) {
+        target.x = 0;
+        target.y = 0;
+      }
       current.x += (target.x - current.x) * 0.06;
       current.y += (target.y - current.y) * 0.06;
-      setTilt({ x: current.x, y: current.y });
+      // Skip state updates once settled and off-screen — no wasted renders.
+      if (visibleRef.current || Math.abs(current.x) > 0.01 || Math.abs(current.y) > 0.01) {
+        setTilt({ x: current.x, y: current.y });
+      }
       frame = window.requestAnimationFrame(tick);
     };
 
